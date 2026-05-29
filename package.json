@@ -1,11 +1,18 @@
 {
-    "name": "gifted-baileys",
+    "name": "emnex-baileys",
     "version": "2.5.8",
     "description": "A lightweight, full-featured WhatsApp Web API library for Node.js",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
-    "homepage": "https://baileys.giftedtech.co.ke",
-    "author": "Gifted Tech",
+    "homepage": "https://github.com/emnextech/emnex-baileys#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/emnextech/emnex-baileys.git"
+    },
+    "bugs": {
+        "url": "https://github.com/emnextech/emnex-baileys/issues"
+    },
+    "author": "Emnex Tech",
     "license": "MIT",
     "keywords": [
         "whatsapp",

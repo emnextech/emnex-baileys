@@ -1,6 +1,11 @@
 MIT License
 
+Copyright (c) 2026 Emnex Tech
 Copyright (c) 2025-2026 Gifted Tech
+
+This software is a derivative work based on Baileys (https://github.com/WhiskeySockets/Baileys)
+by WhiskeySockets and on gifted-baileys by Gifted Tech, both distributed under the MIT License.
+The above copyright notices are retained in accordance with the terms of those licenses.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
