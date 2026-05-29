@@ -1,11 +1,21 @@
 <div align="center">
   <h1>Emnex-Baileys</h1>
-  <p>A WebSocket-based JavaScript library for interacting with the WhatsApp Web API</p>
+  <p><b>A lightweight, full-featured WhatsApp Web API library for Node.js</b> — build WhatsApp bots and automations over a WebSocket connection, with multi-device support and no Selenium or browser required.</p>
 
   [![npm version](https://img.shields.io/npm/v/emnex-baileys.svg)](https://www.npmjs.com/package/emnex-baileys)
   [![npm downloads](https://img.shields.io/npm/dm/emnex-baileys.svg)](https://www.npmjs.com/package/emnex-baileys)
   [![License](https://img.shields.io/npm/l/emnex-baileys.svg)](https://github.com/emnextech/emnex-baileys/blob/main/LICENSE)
 </div>
+
+## Features
+
+- 📱 **Multi-device** — connects directly to the WhatsApp Web multi-device API; no browser, Selenium, or phone-tethering required.
+- 🔌 **WebSocket-based** — fast and lightweight, with a small dependency footprint.
+- 🔑 **Two auth flows** — link a device with a **QR code** or an 8-character **pairing code**.
+- 💬 **Rich messaging** — text, images, video, audio/voice notes, documents, locations, contacts, and reactions.
+- 👥 **Groups** — create, manage participants, invite links, and metadata.
+- 📢 **Channels & Status** — follow/manage newsletters (channels) and post to status/stories.
+- 🟦 **TypeScript** — ships with full type definitions.
 
 ## Disclaimer
 
@@ -22,8 +32,10 @@ This library is MIT-licensed and retains the copyright notices of the projects a
 
 ## Table of Contents
 
+- [Features](#features)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [Getting Started: a complete bot](#getting-started-a-complete-bot)
 - [Authentication](#authentication)
   - [QR Code](#qr-code)
   - [Pairing Code](#pairing-code)
@@ -35,6 +47,7 @@ This library is MIT-licensed and retains the copyright notices of the projects a
 - [Channels / Newsletters](#channels--newsletters)
 - [Status / Stories](#status--stories)
 - [Profile & Privacy](#profile--privacy)
+- [Changelog](#changelog)
 - [License](#license)
 
 ## Installation
@@ -92,6 +105,78 @@ start()
 import pkg from 'emnex-baileys'
 const { default: makeWASocket, useMultiFileAuthState, Browsers } = pkg
 ```
+
+## Getting Started: a complete bot
+
+Here's a complete, copy-paste **echo bot** you can run right now. It renders a QR code in
+your terminal, reconnects automatically, and replies to any incoming text message.
+
+```bash
+npm install emnex-baileys qrcode-terminal
+```
+
+```javascript
+// bot.js
+const {
+  default: makeWASocket,
+  useMultiFileAuthState,
+  Browsers,
+  DisconnectReason,
+} = require('emnex-baileys')
+const qrcode = require('qrcode-terminal')
+
+async function startBot() {
+  const { state, saveCreds } = await useMultiFileAuthState('auth')
+
+  const sock = makeWASocket({
+    auth: state,
+    browser: Browsers.ubuntu('Chrome'),
+  })
+
+  // 1. persist credentials whenever they change
+  sock.ev.on('creds.update', saveCreds)
+
+  // 2. handle connection lifecycle + QR rendering
+  sock.ev.on('connection.update', (update) => {
+    const { connection, lastDisconnect, qr } = update
+
+    if (qr) qrcode.generate(qr, { small: true }) // scan this with WhatsApp
+
+    if (connection === 'open') {
+      console.log('✅ Bot connected and ready!')
+    } else if (connection === 'close') {
+      const shouldReconnect =
+        lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut
+      console.log('Connection closed.', shouldReconnect ? 'Reconnecting…' : 'Logged out.')
+      if (shouldReconnect) startBot()
+    }
+  })
+
+  // 3. reply to incoming messages
+  sock.ev.on('messages.upsert', async ({ messages }) => {
+    const msg = messages[0]
+    if (!msg.message || msg.key.fromMe) return
+
+    const text =
+      msg.message.conversation || msg.message.extendedTextMessage?.text || ''
+    if (!text) return
+
+    await sock.sendMessage(msg.key.remoteJid, { text: `You said: ${text}` }, { quoted: msg })
+  })
+}
+
+startBot()
+```
+
+Run it:
+
+```bash
+node bot.js
+```
+
+Scan the QR code (WhatsApp → **Settings → Linked Devices → Link a Device**). Once you see
+`✅ Bot connected and ready!`, message the linked account from another phone and it will
+echo your text back. The `auth/` folder keeps you logged in, so you only scan once.
 
 ## Authentication
 
@@ -304,6 +389,10 @@ await sock.updateProfileStatus('Powered by emnex-baileys')
 await sock.updateProfilePicture('me@s.whatsapp.net', { url: './avatar.jpg' })
 await sock.sendPresenceUpdate('available') // 'available' | 'unavailable' | 'composing' | 'recording'
 ```
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for release notes and the version history.
 
 ## License
 
