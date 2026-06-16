@@ -1,6 +1,6 @@
 {
     "name": "emnex-baileys",
-    "version": "2.5.10",
+    "version": "2.5.11",
     "description": "A lightweight, full-featured WhatsApp Web API library for Node.js",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
